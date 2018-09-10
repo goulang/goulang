@@ -1,10 +1,15 @@
 package models
 
 import (
+	"encoding/gob"
 	"time"
 
 	"github.com/globalsign/mgo/bson"
 )
+
+func init() {
+	gob.Register(User{})
+}
 
 // User struct
 type User struct {

@@ -9,5 +9,5 @@
 ```
 go get github.com/goulang/goulang
 cd $GOPATH/src/goulang/goulang
-go run main
+go run main.go
 ```
