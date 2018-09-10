@@ -5,17 +5,43 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/goulang/goulang/routes"
 )
 
-func main() {
-	router := gin.Default()
+func loadMiddlewares(router *gin.Engine) {
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 
+	// cors
+	config := cors.DefaultConfig()
+	config.AllowCredentials = true
+	config.AllowOriginFunc = func(origin string) bool {
+		return true
+	}
+	config.AddAllowMethods("PUT", "DELETE")
+	router.Use(cors.New(config))
+
+	// session
+	store := cookie.NewStore([]byte("secret"))
+	store.Options(sessions.Options{
+		Domain: "goulang.com",
+		MaxAge: 3 * 24 * 3600,
+	})
+	router.Use(sessions.Sessions("goulang", store))
+}
+
+func main() {
+	router := gin.New()
+	loadMiddlewares(router)
 	apiGroup := router.Group("api")
 
 	// auth controller
 	authGroup := apiGroup.Group("auth")
+	authGroup.GET("info", routes.Info)
 	authGroup.POST("login", routes.Login)
 	authGroup.POST("regist", routes.Regist)
 	authGroup.POST("logout", routes.Logout)
