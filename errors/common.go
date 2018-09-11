@@ -1,27 +1,16 @@
 package errors
 
-import (
-	"encoding/json"
+import "fmt"
+
+var (
+	ApiErrNamePwdIncorrect = ApiStandardError{1001, "用户名或密码错误"}
 )
 
-type ApiError struct {
-	HttpCode int
-	Messages map[string]interface{}
+type ApiStandardError struct {
+	ErrorCode int    `json:"errorCode"`
+	ErrorMsg  string `json:"errorMsg"`
 }
 
-func NewApiError(code int, errorMsg string) *ApiError {
-	content := map[string]interface{}{
-		"code":    code,
-		"message": errorMsg,
-	}
-
-	return &ApiError{
-		HttpCode: code,
-		Messages: content,
-	}
-}
-
-func (e *ApiError) Error() string {
-	bytes, _ := json.Marshal(e.Messages)
-	return string(bytes)
+func (err ApiStandardError) Error() string {
+	return fmt.Sprintf("code: %d, errorMsg %s", err.ErrorCode, err.ErrorMsg)
 }
