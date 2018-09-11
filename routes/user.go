@@ -1,13 +1,79 @@
 package routes
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/goulang/goulang/models"
-	"github.com/goulang/goulang/proxy"
+	"github.com/wodog/goulang/errors"
+	"github.com/wodog/goulang/models"
+	"github.com/wodog/goulang/proxy"
 )
 
+func Login(c *gin.Context) {
+	var user models.User
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+	success := proxy.User.Login(user.Name, user.Password)
+	if !success {
+		ApiStandardError := errors.ApiErrNamePwdIncorrect
+		c.JSON(400, ApiStandardError)
+		return
+	}
+	session := sessions.Default(c)
+	session.Set("user", user)
+	err = session.Save()
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+}
+
+func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Delete("user")
+	err := session.Save()
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+}
+
+func User(c *gin.Context) {
+	session := sessions.Default(c)
+	user := session.Get("user")
+	user = user.(models.User)
+	c.JSON(200, user)
+}
+
+func Regist(c *gin.Context) {
+	var user models.User
+	err := c.BindJSON(&user)
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+
+	err = proxy.User.Create(&user)
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+}
+
+// DeleteUsers delete a user
+func DeleteUser(c *gin.Context) {
+	userID := c.Param("userID")
+	err := proxy.User.Delete(userID)
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+}
+
 // GetUsers get all user
-func GetUsers(c *gin.Context) {
+func Users(c *gin.Context) {
 	users, err := proxy.User.GetMany(nil, 1, 10)
 	if err != nil {
 		c.String(400, err.Error())
@@ -27,22 +93,6 @@ func GetUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-// CreateUsers create a user
-func CreateUser(c *gin.Context) {
-	var user models.User
-	err := c.BindJSON(&user)
-	if err != nil {
-		c.String(400, err.Error())
-		return
-	}
-
-	err = proxy.User.Create(&user)
-	if err != nil {
-		c.String(400, err.Error())
-		return
-	}
-}
-
 // UpdateUsers update a user
 func UpdateUser(c *gin.Context) {
 	userID := c.Param("userID")
@@ -59,12 +109,18 @@ func UpdateUser(c *gin.Context) {
 	}
 }
 
-// DeleteUsers delete a user
-func DeleteUser(c *gin.Context) {
-	userID := c.Param("userID")
-	err := proxy.User.Delete(userID)
-	if err != nil {
-		c.String(400, err.Error())
-		return
-	}
+func Passwd(c *gin.Context) {
+
+}
+
+func Active(c *gin.Context) {
+
+}
+
+func Profile(c *gin.Context) {
+
+}
+
+func UpdateProfile(c *gin.Context) {
+
 }

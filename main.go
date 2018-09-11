@@ -9,7 +9,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/goulang/goulang/routes"
+	"github.com/wodog/goulang/routes"
 )
 
 func loadMiddlewares(router *gin.Engine) {
@@ -37,22 +37,41 @@ func loadMiddlewares(router *gin.Engine) {
 func main() {
 	router := gin.New()
 	loadMiddlewares(router)
-	apiGroup := router.Group("api")
 
-	// // auth controller
-	// authGroup := apiGroup.Group("auth")
-	// authGroup.GET("info", routes.Info)
-	// authGroup.POST("login", routes.Login)
-	// authGroup.POST("regist", routes.Regist)
-	// authGroup.POST("logout", routes.Logout)
+	// 登录
+	router.POST("login", routes.Login)
+	// 注销
+	router.POST("logout", routes.Logout)
+	// 当前用户
+	router.GET("user", routes.User)
+	// 注册
+	router.POST("regist", routes.Regist)
+	// 修改密码
+	router.POST("passwd", routes.Passwd)
+	// 激活账户
+	router.GET("active", routes.Active)
+	// 查看其他用户
+	router.GET("users/:userID", routes.Profile)
+	// 修改个人信息
+	router.POST("users/:userID", router.UpdateProfile)
 
-	// // user controller
-	userGroup := apiGroup.Group("users")
-	userGroup.GET("", routes.GetUsers)
-	userGroup.GET(":userID", routes.GetUser)
-	userGroup.POST("", routes.CreateUser)
-	userGroup.PUT(":userID", routes.UpdateUser)
-	userGroup.DELETE(":userID", routes.DeleteUser)
+	// 帖子列表
+	router.GET("topics", router.GetTopics)
+	// 查看帖子
+	router.GET("topics/:topicID", router.GetTopic)
+	// 发帖
+	router.POST("topics", router.CreateTopic)
+	// 修改帖子
+	router.PUT("topics/:topicID", router.UpdateTopic)
+	// 删帖
+	router.POST("post/:topicID", router.DeleteTopic)
+
+	// // // user controller
+	// userGroup := apiGroup.Group("users")
+	// userGroup.GET(":userID", routes.GetUser)
+	// userGroup.POST("", routes.CreateUser)
+	// userGroup.PUT(":userID", routes.UpdateUser)
+	// userGroup.DELETE(":userID", routes.DeleteUser)
 
 	// // topic controller
 	// topicGroup := apiGroup.Group("topics")
