@@ -6,3 +6,5 @@ go:
 os:
   - linux
   - osx
+
+install: false
