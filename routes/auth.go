@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
 	"github.com/goulang/goulang/models"
+	"github.com/goulang/goulang/errors"
 )
 
 func Info(c *gin.Context) {
@@ -26,7 +27,9 @@ func Login(c *gin.Context) {
 		"password": user.Password,
 	}).One(&user)
 	if err != nil {
-		c.String(400, "用户名或者密码不正确")
+		ApiStandardError := errors.ApiErrNamePwdIncorrect
+		c.JSON(200, ApiStandardError)
+		//c.String(400, "用户名或者密码不正确")
 		return
 	}
 	session := sessions.Default(c)
