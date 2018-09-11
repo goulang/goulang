@@ -5,6 +5,8 @@ go:
 
 os:
   - linux
+  
+install: false
 
 script:
   - go build
