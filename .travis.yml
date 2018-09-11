@@ -5,10 +5,8 @@ go:
 
 os:
   - linux
-  
-before_install:
+
 install:
-  - echo a
-before_script:
+
 script:
   - go build
