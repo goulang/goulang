@@ -19,13 +19,13 @@ type Qiniu struct {
 	BucketManager *storage.BucketManager
 }
 
-func NewQiniu(bucket, accessKey, secretKey, callBackURL string) Qiniu {
+func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	mac := qbox.NewMac(accessKey, secretKey)
 	cfg := storage.Config{
 		UseHTTPS: false,
 	}
 	bucketManager := storage.NewBucketManager(mac, &cfg)
-	return Qiniu{
+	return &Qiniu{
 		Mac:           mac,
 		bucket:        bucket,
 		accessKey:     accessKey,
@@ -56,7 +56,7 @@ func (q *Qiniu) GetUploadToken() map[string]interface{} {
 
 //获取文件信息 传入文件KEY
 func (q *Qiniu) FileInfo(key string) finalFileInfo.FinalFileInfo {
-	fileInfo, sErr := q.BucketManager.Stat(q.bucket, "FjMFlKUIbFSm1sJhDNY2IJ7OqT3x")
+	fileInfo, sErr := q.BucketManager.Stat(q.bucket, key)
 	if sErr != nil {
 		fmt.Println(sErr)
 		return finalFileInfo.FinalFileInfo{}
@@ -65,9 +65,8 @@ func (q *Qiniu) FileInfo(key string) finalFileInfo.FinalFileInfo {
 }
 
 //获取指定前缀列表文件 (前缀)prefix (分隔符)delimiter (标记)marker (长度)limit
-func (q *Qiniu) PrefixListFiles(limit int) (data [][]storage.ListItem) {
+func (q *Qiniu) PrefixListFiles(prefix string, limit int) (data [][]storage.ListItem) {
 	delimiter := ""
-	prefix := ""
 	marker := ""
 	manager := q.newBucketManager()
 	for {

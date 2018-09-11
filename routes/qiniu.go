@@ -8,30 +8,26 @@ import (
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/storage/Qiniu"
 	"github.com/qiniu/api.v7/auth/qbox"
-	"github.com/qiniu/api.v7/storage"
 	"os"
 	"time"
 )
 
 var (
-	bucket      string
-	accessKey   string
-	secretKey   string
-	callBackURL string
-)
-
-func init() {
+	storage *Qiniu.Qiniu
 	bucket = os.Getenv("QINIU_TEST_BUCKET")
 	accessKey = os.Getenv("QINIU_ACCESS_KEY")
 	secretKey = os.Getenv("QINIU_SECRET_KEY")
 	callBackURL = os.Getenv("QINIU_CALLBACK_URL")
+)
+
+func init() {
+	storage = Qiniu.NewQiniu(bucket, accessKey, secretKey, callBackURL)
 }
 
 /*
 获取上传Token
 */
 func GetUploadToken(c *gin.Context) {
-	storage := Qiniu.NewQiniu(bucket, accessKey, secretKey, callBackURL)
 	c.JSON(200, storage.GetUploadToken())
 	return
 }
@@ -40,7 +36,6 @@ func GetUploadToken(c *gin.Context) {
 回调保存上传信息
 */
 func CallbackURL(c *gin.Context) {
-	storage := Qiniu.NewQiniu(bucket, accessKey, secretKey, callBackURL)
 	//完成七牛回调验证
 	isQiniu, err := qbox.VerifyCallback(storage.Mac, c.Request)
 	if err != nil {
@@ -72,19 +67,6 @@ func CallbackURL(c *gin.Context) {
 }
 
 func Test(c *gin.Context) {
-	//storage := Qiniu.NewQiniu(bucket, accessKey, secretKey, callBackURL)
-	fmt.Println(accessKey, secretKey)
-
-	mac := qbox.NewMac(accessKey, secretKey)
-	cfg := storage.Config{
-		UseHTTPS: false,
-	}
-	bucketManager := storage.NewBucketManager(mac, &cfg)
-	fileInfo, sErr := bucketManager.Stat(bucket, "FjMFlKUIbFSm1sJhDNY2IJ7OqT3x")
-	if sErr != nil {
-		fmt.Println(sErr)
-
-	}
-	fmt.Println(fileInfo)
+	fmt.Println(storage.PrefixListFiles("", 1000))
 	return
 }
