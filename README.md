@@ -1,16 +1,16 @@
-# goulang
+# goulang [![Build Status](https://travis-ci.org/goulang/goulang.svg?branch=master)](https://travis-ci.org/goulang/goulang)
 
 够浪社区
 
 ## Development
-
-数据库用的mongo，记得在本地搭建哟
+数据库用的mongo，记得先在本地搭建哟
 
 ```
 go get github.com/goulang/goulang
 cd $GOPATH/src/goulang/goulang
 go run main.go
 ```
+
 ## Contributing
 Contributions are most welcome! The parser itself is pretty stupidly naive and I wouldn't be surprised if it breaks with edge cases.
 

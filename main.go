@@ -59,8 +59,8 @@ func main() {
 	topicGroup.GET("", routes.GetTopics)
 	topicGroup.GET(":topicID", routes.GetTopic)
 	topicGroup.POST("", routes.CreateTopic)
-	topicGroup.PUT("/:topicID", routes.UpdateTopic)
-	topicGroup.DELETE("/:topicID", routes.DeleteTopic)
+	topicGroup.PUT(":topicID", routes.UpdateTopic)
+	topicGroup.DELETE(":topicID", routes.DeleteTopic)
 
 	// comment controller
 	commentGroup := apiGroup.Group("comments")
