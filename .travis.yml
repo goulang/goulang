@@ -7,7 +7,7 @@ os:
   - linux
   
 before_install:
+install:
 before_script:
-
 script:
   - go build
