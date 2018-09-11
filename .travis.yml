@@ -6,7 +6,7 @@ go:
 os:
   - linux
   
-install: false
+before_install:
 
 script:
   - go build
