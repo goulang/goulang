@@ -70,5 +70,11 @@ func main() {
 	commentGroup.PUT(":commentID", routes.UpdateComment)
 	commentGroup.DELETE(":commentID", routes.DeleteComment)
 
+	// qiniu controller
+	qiniuGroup := apiGroup.Group("qiniu")
+	qiniuGroup.GET("token", routes.GetUploadToken)
+	qiniuGroup.POST("callback", routes.CallbackURL)
+	qiniuGroup.POST("test", routes.Test)
+
 	router.Run(":" + os.Getenv("PORT"))
 }
