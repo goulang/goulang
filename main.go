@@ -79,11 +79,28 @@ func loadRouters(r *gin.Engine) {
 	// r.PUT("topics/:topicID", routes.UpdateTopic)
 	// // 删帖
 	// r.POST("topics/:topicID", routes.DeleteTopic)
+  
+	// topic controller
+	topicGroup := apiGroup.Group("topics")
+	topicGroup.GET("", routes.GetTopics)
+	topicGroup.GET(":topicID", routes.GetTopic)
+	topicGroup.POST("", routes.CreateTopic)
+	topicGroup.PUT("/:topicID", routes.UpdateTopic)
+	topicGroup.DELETE("/:topicID", routes.DeleteTopic)
 
-	// // 获取评论
-	// r.GET("topics/:topicID/comments", routes.GetComments)
-	// // 发表评论
-	// r.POST("topics/:topicID/comments", routes.CreateComment)
-	// // 删除评论
-	// r.DELETE("topics/:topicID/comments/:commentID", routes.DeleteComment)
+	// comment controller
+	commentGroup := apiGroup.Group("comments")
+	commentGroup.GET("", routes.GetComments)
+	commentGroup.GET(":commentID", routes.GetComment)
+	commentGroup.POST("", routes.CreateComment)
+	commentGroup.PUT(":commentID", routes.UpdateComment)
+	commentGroup.DELETE(":commentID", routes.DeleteComment)
+
+	// qiniu controller
+	qiniuGroup := apiGroup.Group("qiniu")
+	qiniuGroup.GET("token", routes.GetUploadToken)
+	qiniuGroup.POST("callback", routes.CallbackURL)
+	qiniuGroup.POST("test", routes.Test)
+
+	router.Run(":" + os.Getenv("PORT"))
 }
