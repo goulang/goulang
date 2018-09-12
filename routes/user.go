@@ -3,6 +3,8 @@ package routes
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo/bson"
+	"github.com/goulang/goulang/common"
 	"github.com/goulang/goulang/errors"
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
@@ -15,12 +17,23 @@ func Login(c *gin.Context) {
 		c.String(400, err.Error())
 		return
 	}
-	success := proxy.User.Login(user.Name, user.Password)
-	if !success {
+	data, err := proxy.User.GetOne(bson.M{
+		"name":     user.Name,
+		"password": common.GetMD5Hash(user.Password),
+	})
+	if err != nil {
 		ApiStandardError := errors.ApiErrNamePwdIncorrect
 		c.JSON(400, ApiStandardError)
 		return
 	}
+	user = data.(models.User)
+
+	// 校验账号状态
+	if user.Status == common.Linactive || user.Status == common.Ldisable {
+		c.String(403, "账户禁止登陆")
+		return
+	}
+
 	session := sessions.Default(c)
 	session.Set("user", user)
 	err = session.Save()
@@ -32,7 +45,7 @@ func Login(c *gin.Context) {
 
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
-	session.Delete("user")
+	session.Clear()
 	err := session.Save()
 	if err != nil {
 		c.String(400, err.Error())
@@ -41,10 +54,7 @@ func Logout(c *gin.Context) {
 }
 
 func User(c *gin.Context) {
-	session := sessions.Default(c)
-	user := session.Get("user")
-	user = user.(models.User)
-	c.JSON(200, user)
+	c.JSON(200, c.MustGet("user"))
 }
 
 func Regist(c *gin.Context) {
@@ -55,6 +65,8 @@ func Regist(c *gin.Context) {
 		return
 	}
 
+	user.Status = common.Lnormal
+	user.Password = common.GetMD5Hash(user.Password)
 	err = proxy.User.Create(&user)
 	if err != nil {
 		c.String(400, err.Error())
@@ -93,31 +105,11 @@ func GetUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-// // UpdateUsers update a user
-// func UpdateUser(c *gin.Context) {
-// 	userID := c.Param("userID")
-// 	var user models.User
-// 	err := c.BindJSON(&user)
-// 	if err != nil {
-// 		c.String(400, err.Error())
-// 		return
-// 	}
-// 	err = proxy.User.Update(userID, &user)
-// 	if err != nil {
-// 		c.String(400, err.Error())
-// 		return
-// 	}
-// }
-
 func Passwd(c *gin.Context) {
 
 }
 
 func Active(c *gin.Context) {
-
-}
-
-func Profile(c *gin.Context) {
 
 }
 

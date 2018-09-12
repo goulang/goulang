@@ -1,6 +1,6 @@
 sessions
 ========
-[![GoDoc](https://godoc.org/github.com/gorilla/sessions?status.svg)](https://godoc.org/github.com/gorilla/sessions) [![Build Status](https://travis-ci.org/gorilla/sessions.svg?branch=master)](https://travis-ci.org/gorilla/sessions)
+[![GoDoc](https://godoc.org/github.com/gorilla/sessions?status.svg)](https://godoc.org/github.com/gorilla/sessions) [![Build Status](https://travis-ci.org/gorilla/sessions.png?branch=master)](https://travis-ci.org/gorilla/sessions)
 [![Sourcegraph](https://sourcegraph.com/github.com/gorilla/sessions/-/badge.svg)](https://sourcegraph.com/github.com/gorilla/sessions?badge)
 
 
@@ -44,14 +44,14 @@ Let's start with an example that shows the sessions API in a nutshell:
 
 First we initialize a session store calling `NewCookieStore()` and passing a
 secret key used to authenticate the session. Inside the handler, we call
-`store.Get()` to retrieve an existing session or create a new one. Then we set
-some session values in session.Values, which is a `map[interface{}]interface{}`.
+`store.Get()` to retrieve an existing session or a new one. Then we set some
+session values in session.Values, which is a `map[interface{}]interface{}`.
 And finally we call `session.Save()` to save the session in the response.
 
 Important Note: If you aren't using gorilla/mux, you need to wrap your handlers
 with
 [`context.ClearHandler`](http://www.gorillatoolkit.org/pkg/context#ClearHandler)
-or else you will leak memory! An easy way to do this is to wrap the top-level
+as or else you will leak memory! An easy way to do this is to wrap the top-level
 mux when calling http.ListenAndServe:
 
 ```go
@@ -84,8 +84,6 @@ Other implementations of the `sessions.Store` interface:
 * [github.com/michaeljs1990/sqlitestore](https://github.com/michaeljs1990/sqlitestore) - SQLite
 * [github.com/wader/gormstore](https://github.com/wader/gormstore) - GORM (MySQL, PostgreSQL, SQLite)
 * [github.com/gernest/qlstore](https://github.com/gernest/qlstore) - ql
-* [github.com/quasoft/memstore](https://github.com/quasoft/memstore) - In-memory implementation for use in unit tests
-* [github.com/lafriks/xormstore](https://github.com/lafriks/xormstore) - XORM (MySQL, PostgreSQL, SQLite, Microsoft SQL Server, TiDB)
 
 ## License
 
