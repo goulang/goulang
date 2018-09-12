@@ -3,9 +3,9 @@ package routes
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/wodog/goulang/errors"
-	"github.com/wodog/goulang/models"
-	"github.com/wodog/goulang/proxy"
+	"github.com/goulang/goulang/errors"
+	"github.com/goulang/goulang/models"
+	"github.com/goulang/goulang/proxy"
 )
 
 func Login(c *gin.Context) {
@@ -93,21 +93,21 @@ func GetUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-// UpdateUsers update a user
-func UpdateUser(c *gin.Context) {
-	userID := c.Param("userID")
-	var user models.User
-	err := c.BindJSON(&user)
-	if err != nil {
-		c.String(400, err.Error())
-		return
-	}
-	err = proxy.User.Update(userID, &user)
-	if err != nil {
-		c.String(400, err.Error())
-		return
-	}
-}
+// // UpdateUsers update a user
+// func UpdateUser(c *gin.Context) {
+// 	userID := c.Param("userID")
+// 	var user models.User
+// 	err := c.BindJSON(&user)
+// 	if err != nil {
+// 		c.String(400, err.Error())
+// 		return
+// 	}
+// 	err = proxy.User.Update(userID, &user)
+// 	if err != nil {
+// 		c.String(400, err.Error())
+// 		return
+// 	}
+// }
 
 func Passwd(c *gin.Context) {
 
