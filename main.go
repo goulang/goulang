@@ -69,6 +69,7 @@ func loadRouters(r *gin.Engine) {
 	// 删除用户
 	r.DELETE("users/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.DeleteUser)
 
+
 	// 帖子列表 TODO
 	r.GET("topics", routes.GetTopics)
 	// 查看帖子 TODO
