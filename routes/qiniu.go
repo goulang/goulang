@@ -2,15 +2,11 @@ package routes
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/globalsign/mgo/bson"
-	"github.com/goulang/goulang/errors"
-	"github.com/goulang/goulang/models"
-	"github.com/goulang/goulang/storage/Qiniu"
-	"github.com/qiniu/api.v7/auth/qbox"
-	"os"
-	"time"
 	"io/ioutil"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/goulang/goulang/storage/Qiniu"
 )
 
 var (
@@ -41,42 +37,42 @@ func GetUploadToken(c *gin.Context) {
 回调保存上传信息
 */
 func CallbackURL(c *gin.Context) {
-	//完成七牛回调验证
-	isQiniu, err := qbox.VerifyCallback(storage.Mac, c.Request)
-	if err != nil {
-		c.JSON(200, errors.NewUnknownErr(err))
-		return
-	}
-	if !isQiniu {
-		c.JSON(200, errors.ApiErrRefuse)
-		return
-	}
+	// //完成七牛回调验证
+	// isQiniu, err := qbox.VerifyCallback(storage.Mac, c.Request)
+	// if err != nil {
+	// 	c.JSON(200, errors.NewUnknownErr(err))
+	// 	return
+	// }
+	// if !isQiniu {
+	// 	c.JSON(200, errors.ApiErrRefuse)
+	// 	return
+	// }
 
-	//入库
-	var file models.QFile
-	if err := c.BindJSON(&file); err != nil {
-		c.JSON(200, errors.NewUnknownErr(err))
-		return
-	}
-	file.ID = bson.NewObjectId()
-	now := time.Now()
-	file.CreatedAt = now
-	file.UpdatedAt = now
+	// //入库
+	// var file models.QFile
+	// if err := c.BindJSON(&file); err != nil {
+	// 	c.JSON(200, errors.NewUnknownErr(err))
+	// 	return
+	// }
+	// file.ID = bson.NewObjectId()
+	// now := time.Now()
+	// file.CreatedAt = now
+	// file.UpdatedAt = now
 
-	if err := qiniuCollection.Insert(&file); err != nil {
-		c.JSON(200, errors.NewUnknownErr(err))
-		return
-	}
-	c.JSON(200, file)
-	return
+	// if err := qiniuCollection.Insert(&file); err != nil {
+	// 	c.JSON(200, errors.NewUnknownErr(err))
+	// 	return
+	// }
+	// c.JSON(200, file)
+	// return
 }
 
 func Test(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		fmt.Println("file",err)
+		fmt.Println("file", err)
 	}
 	bytes, err := ioutil.ReadAll(file)
-	storage.PutFile(header.Filename,bytes)
+	storage.PutFile(header.Filename, bytes)
 	return
 }

@@ -7,6 +7,6 @@ os:
   - linux
 
 install:
-
+  - echo no install
 script:
   - go build

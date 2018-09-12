@@ -8,6 +8,15 @@ import (
 	"github.com/globalsign/mgo/bson"
 )
 
+type proxy interface {
+	Get(id string) (interface{}, error)
+	GetOne(query interface{}) (interface{}, error)
+	GetMany(query interface{}, page int, limit int) (interface{}, error)
+	Create(body interface{}) error
+	Update(id string, body interface{}) error
+	Delete(id string) error
+}
+
 var _ proxy = &baseProxy{}
 
 type baseProxy struct {
@@ -17,6 +26,12 @@ type baseProxy struct {
 func (p *baseProxy) Get(id string) (interface{}, error) {
 	var i interface{}
 	err := p.coll.FindId(bson.ObjectIdHex(id)).One(&i)
+	return i, err
+}
+
+func (p *baseProxy) GetOne(query interface{}) (interface{}, error) {
+	var i interface{}
+	err := p.coll.Find(query).One(&i)
 	return i, err
 }
 

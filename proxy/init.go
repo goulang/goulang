@@ -6,14 +6,6 @@ import (
 	"github.com/globalsign/mgo"
 )
 
-type proxy interface {
-	Get(id string) (interface{}, error)
-	GetMany(query interface{}, page int, limit int) (interface{}, error)
-	Create(body interface{}) error
-	Update(id string, body interface{}) error
-	Delete(id string) error
-}
-
 var User *userProxy
 var Topic *topicProxy
 var Comment *commentProxy
