@@ -10,13 +10,14 @@ import (
 	"github.com/qiniu/api.v7/auth/qbox"
 	"os"
 	"time"
+	"io/ioutil"
 )
 
 var (
-	storage *Qiniu.Qiniu
-	bucket = os.Getenv("QINIU_TEST_BUCKET")
-	accessKey = os.Getenv("QINIU_ACCESS_KEY")
-	secretKey = os.Getenv("QINIU_SECRET_KEY")
+	storage     *Qiniu.Qiniu
+	bucket      = os.Getenv("QINIU_TEST_BUCKET")
+	accessKey   = os.Getenv("QINIU_ACCESS_KEY")
+	secretKey   = os.Getenv("QINIU_SECRET_KEY")
 	callBackURL = os.Getenv("QINIU_CALLBACK_URL")
 )
 
@@ -28,7 +29,11 @@ func init() {
 获取上传Token
 */
 func GetUploadToken(c *gin.Context) {
-	c.JSON(200, storage.GetUploadToken())
+	upToken, putPolicy := storage.GetUploadToken()
+	c.JSON(200, gin.H{
+		"token":   upToken,
+		"expires": putPolicy.Expires,
+	})
 	return
 }
 
@@ -67,6 +72,11 @@ func CallbackURL(c *gin.Context) {
 }
 
 func Test(c *gin.Context) {
-	fmt.Println(storage.PrefixListFiles("", 1000))
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		fmt.Println("file",err)
+	}
+	bytes, err := ioutil.ReadAll(file)
+	storage.PutFile(header.Filename,bytes)
 	return
 }
