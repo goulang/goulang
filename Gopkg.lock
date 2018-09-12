@@ -88,15 +88,15 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:abfb882f3f93368d5d9711fb46b72da119c8513d635f69ad667b3e8b45edefde"
+  digest = "1:982525be36d5dee2d2193a7e8f53e105fde000f83662adc41881647bbe86e596"
   name = "github.com/joho/godotenv"
   packages = [
     ".",
     "autoload",
   ]
   pruneopts = "UT"
-  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
-  version = "v1.2.0"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -131,12 +131,45 @@
   version = "1.0.1"
 
 [[projects]]
+  digest = "1:aab28a3cde82e2a044abbc78ef13ca57da6164a65a2a529ccc2f0152f699bd56"
+  name = "github.com/qiniu/api.v7"
+  packages = [
+    "auth/qbox",
+    "conf",
+    "storage",
+  ]
+  pruneopts = "UT"
+  revision = "abe6b9e846ebb649eaf808e515655ab628621e4a"
+  version = "v7.2.4"
+
+[[projects]]
+  digest = "1:8fe33326d70f4517661943a844fcc63622e24d014e305b39b468a136a5981904"
+  name = "github.com/qiniu/x"
+  packages = [
+    "bytes.v7",
+    "bytes.v7/seekable",
+    "reqid.v7",
+    "xlog.v7",
+  ]
+  pruneopts = "UT"
+  revision = "946c4a16076d6d98aeb78619e2bd4012357f7228"
+  version = "v7.0.8"
+
+[[projects]]
   digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = "UT"
   revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
   version = "v1.1.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  pruneopts = "UT"
+  revision = "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 
 [[projects]]
   branch = "master"
@@ -162,6 +195,18 @@
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
+[[projects]]
+  digest = "1:bd63966578d5d7b84d7d0cd3a140d0ad8214784d505d9881bdaea5e361fedfc0"
+  name = "qiniupkg.com/x"
+  packages = [
+    "bytes.v7",
+    "log.v7",
+    "reqid.v7",
+  ]
+  pruneopts = "UT"
+  revision = "946c4a16076d6d98aeb78619e2bd4012357f7228"
+  version = "v7.0.8"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -173,6 +218,9 @@
     "github.com/globalsign/mgo",
     "github.com/globalsign/mgo/bson",
     "github.com/joho/godotenv/autoload",
+    "github.com/qiniu/api.v7/auth/qbox",
+    "github.com/qiniu/api.v7/storage",
+    "golang.org/x/net/context",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

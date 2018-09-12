@@ -12,9 +12,16 @@ import (
 	"github.com/goulang/goulang/routes"
 )
 
-func loadMiddlewares(router *gin.Engine) {
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+func main() {
+	router := gin.New()
+	loadMiddlewares(router)
+	loadRouters(router)
+	router.Run(":" + os.Getenv("PORT"))
+}
+
+func loadMiddlewares(r *gin.Engine) {
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 
 	// cors
 	config := cors.DefaultConfig()
@@ -23,7 +30,7 @@ func loadMiddlewares(router *gin.Engine) {
 		return true
 	}
 	config.AddAllowMethods("PUT", "DELETE")
-	router.Use(cors.New(config))
+	r.Use(cors.New(config))
 
 	// session
 	store := cookie.NewStore([]byte("secret"))
@@ -31,50 +38,52 @@ func loadMiddlewares(router *gin.Engine) {
 		Domain: "goulang.com",
 		MaxAge: 3 * 24 * 3600,
 	})
-	router.Use(sessions.Sessions("goulang", store))
+	r.Use(sessions.Sessions("goulang", store))
 }
 
-func main() {
-	router := gin.New()
-	loadMiddlewares(router)
-	apiGroup := router.Group("api")
-
-	// auth controller
-	authGroup := apiGroup.Group("auth")
-	authGroup.GET("info", routes.Info)
-	authGroup.POST("login", routes.Login)
-	authGroup.POST("regist", routes.Regist)
-	authGroup.POST("logout", routes.Logout)
-
-	// user controller
-	userGroup := apiGroup.Group("users")
-	userGroup.GET("", routes.GetUsers)
-	userGroup.GET(":userID", routes.GetUser)
-	userGroup.POST("", routes.CreateUser)
-	userGroup.PUT(":userID", routes.UpdateUser)
-	userGroup.DELETE(":userID", routes.DeleteUser)
-
-	// topic controller
-	topicGroup := apiGroup.Group("topics")
-	topicGroup.GET("", routes.GetTopics)
-	topicGroup.GET(":topicID", routes.GetTopic)
-	topicGroup.POST("", routes.CreateTopic)
-	topicGroup.PUT(":topicID", routes.UpdateTopic)
-	topicGroup.DELETE(":topicID", routes.DeleteTopic)
-
-	// comment controller
-	commentGroup := apiGroup.Group("comments")
-	commentGroup.GET("", routes.GetComments)
-	commentGroup.GET(":commentID", routes.GetComment)
-	commentGroup.POST("", routes.CreateComment)
-	commentGroup.PUT(":commentID", routes.UpdateComment)
-	commentGroup.DELETE(":commentID", routes.DeleteComment)
-
-	// qiniu controller
-	qiniuGroup := apiGroup.Group("qiniu")
+func loadRouters(r *gin.Engine) {
+	// qiniu
+	qiniuGroup := r.Group("qiniu")
 	qiniuGroup.GET("token", routes.GetUploadToken)
 	qiniuGroup.POST("callback", routes.CallbackURL)
 	qiniuGroup.POST("test", routes.Test)
 
-	router.Run(":" + os.Getenv("PORT"))
+	// 登录
+	r.POST("login", routes.Login)
+	// 注销
+	r.POST("logout", routes.Logout)
+	// 当前用户
+	r.GET("user", routes.User)
+	// 注册
+	r.POST("regist", routes.Regist)
+	// 修改密码
+	r.POST("passwd", routes.Passwd)
+	// 激活账户
+	r.GET("active", routes.Active)
+	// 查看其他用户
+	r.GET("users/:userID", routes.Profile)
+	// 修改个人信息
+	r.POST("users", routes.UpdateProfile)
+	// 上传头像
+	r.POST("avatar", routes.Avatar)
+	// 删除用户
+	r.DELETE("users/:userID", routes.DeleteUser)
+
+	// // 帖子列表
+	// r.GET("topics", routes.GetTopics)
+	// // 查看帖子
+	// r.GET("topics/:topicID", routes.GetTopic)
+	// // 发帖
+	// r.POST("topics", routes.CreateTopic)
+	// // 修改帖子
+	// r.PUT("topics/:topicID", routes.UpdateTopic)
+	// // 删帖
+	// r.POST("topics/:topicID", routes.DeleteTopic)
+
+	// // 获取评论
+	// r.GET("topics/:topicID/comments", routes.GetComments)
+	// // 发表评论
+	// r.POST("topics/:topicID/comments", routes.CreateComment)
+	// // 删除评论
+	// r.DELETE("topics/:topicID/comments/:commentID", routes.DeleteComment)
 }
