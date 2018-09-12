@@ -42,6 +42,12 @@ func loadMiddlewares(r *gin.Engine) {
 }
 
 func loadRouters(r *gin.Engine) {
+	// qiniu
+	qiniuGroup := r.Group("qiniu")
+	qiniuGroup.GET("token", routes.GetUploadToken)
+	qiniuGroup.POST("callback", routes.CallbackURL)
+	qiniuGroup.POST("test", routes.Test)
+
 	// 登录
 	r.POST("login", routes.Login)
 	// 注销
@@ -61,46 +67,23 @@ func loadRouters(r *gin.Engine) {
 	// 上传头像
 	r.POST("avatar", routes.Avatar)
 	// 删除用户
-	r.DELETE("users/:userID", DeleteUser)
+	r.DELETE("users/:userID", routes.DeleteUser)
 
-	// 帖子列表
-	r.GET("topics", routes.GetTopics)
-	// 查看帖子
-	r.GET("topics/:topicID", routes.GetTopic)
-	// 发帖
-	r.POST("topics", routes.CreateTopic)
-	// 修改帖子
-	r.PUT("topics/:topicID", routes.UpdateTopic)
-	// 删帖
-	r.POST("topics/:topicID", routes.DeleteTopic)
+	// // 帖子列表
+	// r.GET("topics", routes.GetTopics)
+	// // 查看帖子
+	// r.GET("topics/:topicID", routes.GetTopic)
+	// // 发帖
+	// r.POST("topics", routes.CreateTopic)
+	// // 修改帖子
+	// r.PUT("topics/:topicID", routes.UpdateTopic)
+	// // 删帖
+	// r.POST("topics/:topicID", routes.DeleteTopic)
 
-	// 获取评论
-	r.GET("topics/:topicID/comments", routes.GetComments)
-	// 发表评论
-	r.POST("topics/:topicID/comments", routes.CreateComment)
-	// 删除评论
-	r.DELETE("topics/:topicID/comments/:commentID", routes.DeleteComment)
-
-	// // // user controller
-	// userGroup := apiGroup.Group("users")
-	// userGroup.GET(":userID", routes.GetUser)
-	// userGroup.POST("", routes.CreateUser)
-	// userGroup.PUT(":userID", routes.UpdateUser)
-	// userGroup.DELETE(":userID", routes.DeleteUser)
-
-	// // topic controller
-	// topicGroup := apiGroup.Group("topics")
-	// topicGroup.GET("", routes.GetTopics)
-	// topicGroup.GET(":topicID", routes.GetTopic)
-	// topicGroup.POST("", routes.CreateTopic)
-	// topicGroup.PUT(":topicID", routes.UpdateTopic)
-	// topicGroup.DELETE(":topicID", routes.DeleteTopic)
-
-	// // comment controller
-	// commentGroup := apiGroup.Group("comments")
-	// commentGroup.GET("", routes.GetComments)
-	// commentGroup.GET(":commentID", routes.GetComment)
-	// commentGroup.POST("", routes.CreateComment)
-	// commentGroup.PUT(":commentID", routes.UpdateComment)
-	// commentGroup.DELETE(":commentID", routes.DeleteComment)
+	// // 获取评论
+	// r.GET("topics/:topicID/comments", routes.GetComments)
+	// // 发表评论
+	// r.POST("topics/:topicID/comments", routes.CreateComment)
+	// // 删除评论
+	// r.DELETE("topics/:topicID/comments/:commentID", routes.DeleteComment)
 }

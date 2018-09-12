@@ -124,3 +124,7 @@ func Profile(c *gin.Context) {
 func UpdateProfile(c *gin.Context) {
 
 }
+
+func Avatar(c *gin.Context) {
+
+}

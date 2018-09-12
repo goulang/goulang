@@ -1,20 +1,28 @@
 package routes
 
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/goulang/goulang/proxy"
+)
+
 // import (
 // 	"github.com/gin-gonic/gin"
 // 	"github.com/wodog/goulang/models"
 // 	"github.com/wodog/goulang/proxy"
 // )
 
-// // GetTopics get all Topic
-// func GetTopics(c *gin.Context) {
-// 	data, err := proxy.Topic.GetMany(nil, 1, 10)
-// 	if err != nil {
-// 		c.String(400, err.Error())
-// 		return
-// 	}
-// 	c.JSON(200, data)
-// }
+// GetTopics get all Topic
+func GetTopics(c *gin.Context) {
+	// page := strconv.Atoi(c.Query("page"))
+	// limit := c.Query("limit").Atoi()
+
+	data, err := proxy.Topic.GetMany(nil, 1, 10)
+	if err != nil {
+		c.String(400, err.Error())
+		return
+	}
+	c.JSON(200, data)
+}
 
 // // GetTopic get a Topic
 // func GetTopic(c *gin.Context) {
