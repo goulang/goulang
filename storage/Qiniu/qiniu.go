@@ -2,13 +2,13 @@ package Qiniu
 
 import (
 	"fmt"
-	"log"
 
 	finalFileInfo "github.com/goulang/goulang/storage"
 	"github.com/qiniu/api.v7/auth/qbox"
 	"github.com/qiniu/api.v7/storage"
-	"github.com/qiniu/x/bytes.v7"
 	"github.com/qiniu/x/rpc.v7"
+	"log"
+	"github.com/qiniu/x/bytes.v7"
 	"golang.org/x/net/context"
 )
 

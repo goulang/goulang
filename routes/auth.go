@@ -27,11 +27,13 @@ func UserOwnerRequred(c *gin.Context) {
 	}
 
 	userID := c.Param("userID")
+
 	data, err := proxy.User.Get(userID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
+
 	user := data.(models.User)
 	if user.ID != currentUser.ID {
 		c.AbortWithStatus(403)
@@ -45,12 +47,14 @@ func TopicOwnerRequred(c *gin.Context) {
 	if currentUser.Admin == true {
 		return
 	}
+
 	topicID := c.Param("topicID")
 	data, err := proxy.Topic.Get(topicID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
+
 	topic := data.(models.Topic)
 	if topic.UserID != currentUser.ID {
 		c.AbortWithStatus(403)
@@ -66,11 +70,13 @@ func CommentOwnerRequred(c *gin.Context) {
 	}
 
 	CommentID := c.Param("CommentID")
+
 	data, err := proxy.Comment.Get(CommentID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
+
 	comment := data.(models.Comment)
 	if comment.UserID != currentUser.ID {
 		c.AbortWithStatus(403)
