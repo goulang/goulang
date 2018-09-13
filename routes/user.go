@@ -9,9 +9,10 @@ import (
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
 	"github.com/goulang/goulang/storage/Qiniu"
-	"fmt"
-	"time"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"time"
 )
 
 func Login(c *gin.Context) {
@@ -145,6 +146,19 @@ func Avatar(c *gin.Context) {
 
 	//上传新头像
 	file, header, err := c.Request.FormFile("file")
-	aaa := time.Now().UnixNano()
-	fmt.Println(aaa,ok)
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+
+	name := common.GetFileUniqueName(header.Filename)
+	// TODO 完成从配置读取路径
+	name = time.Now().Format("avatar/2006/01/02") + "/" + name
+	bytes, err := ioutil.ReadAll(file)
+	Qiniu.Storage.PutFile(name, bytes)
+	c.JSON(http.StatusOK, gin.H{
+		"key":    name,
+		"access": Qiniu.Storage.GetUrl(name),
+	})
 }

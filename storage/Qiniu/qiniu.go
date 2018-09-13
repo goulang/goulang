@@ -5,15 +5,16 @@ import (
 
 	"github.com/qiniu/api.v7/auth/qbox"
 	"github.com/qiniu/api.v7/storage"
-	"github.com/qiniu/x/rpc.v7"
-	"log"
 	"github.com/qiniu/x/bytes.v7"
+	"github.com/qiniu/x/rpc.v7"
 	"golang.org/x/net/context"
+	"log"
 	"os"
 )
 
 var (
 	Storage     *Qiniu
+	domain      = os.Getenv("QINIU_DOMAIN")
 	bucket      = os.Getenv("QINIU_TEST_BUCKET")
 	accessKey   = os.Getenv("QINIU_ACCESS_KEY")
 	secretKey   = os.Getenv("QINIU_SECRET_KEY")
@@ -21,11 +22,12 @@ var (
 )
 
 func init() {
-	Storage = NewQiniu(bucket, accessKey, secretKey, callBackURL)
+	Storage = NewQiniu(domain, bucket, accessKey, secretKey, callBackURL)
 }
 
 type Qiniu struct {
 	Mac           *qbox.Mac
+	domain        string
 	bucket        string
 	accessKey     string
 	secretKey     string
@@ -33,7 +35,7 @@ type Qiniu struct {
 	BucketManager *storage.BucketManager
 }
 
-func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
+func NewQiniu(domain, bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	mac := qbox.NewMac(accessKey, secretKey)
 	cfg := storage.Config{
 		UseHTTPS: false,
@@ -41,6 +43,7 @@ func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	bucketManager := storage.NewBucketManager(mac, &cfg)
 	return &Qiniu{
 		Mac:           mac,
+		domain:        domain,
 		bucket:        bucket,
 		accessKey:     accessKey,
 		secretKey:     secretKey,
@@ -219,6 +222,11 @@ func (q *Qiniu) HasFile(key string) bool {
 		}
 	}
 	return false
+}
+
+//获取资源路径
+func (q *Qiniu) GetUrl(key string) string {
+	return q.domain + key
 }
 
 func (q *Qiniu) newBucketManager() *storage.BucketManager {
