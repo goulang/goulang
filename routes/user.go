@@ -155,11 +155,20 @@ func Avatar(c *gin.Context) {
 	// TODO 完成从配置读取路径
 	name = time.Now().Format("avatar/2006/01/02") + "/" + name
 	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
 	Qiniu.Storage.PutFile(name, bytes)
 
 	//更新头像
 	user.Avatar = name
-	proxy.User.Update(userID, &user)
+	if err := proxy.User.Update(userID, &user); err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"key":    name,
