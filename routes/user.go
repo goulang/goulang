@@ -160,10 +160,15 @@ func Avatar(c *gin.Context) {
 		errors.NewUnknownErr(err)
 		return
 	}
-	Qiniu.Storage.PutFile(name, bytes)
+	_, isOk := Qiniu.Storage.PutFile(name, bytes)
+	if isOk != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
 
 	//更新头像
-	user.Avatar = name
+	user.Avatar = Qiniu.Storage.GetUrl(name)
 	if err := proxy.User.Update(userID, &user); err != nil {
 		log.Println(err)
 		errors.NewUnknownErr(err)
