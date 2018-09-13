@@ -37,12 +37,6 @@ func (p *baseProxy) GetOne(query interface{}) (interface{}, error) {
 	return reflect.ValueOf(data).Elem().Interface(), err
 }
 
-func (p *baseProxy) GetOne(query interface{}) (interface{}, error) {
-	var i interface{}
-	err := p.coll.Find(query).One(&i)
-	return i, err
-}
-
 func (p *baseProxy) GetMany(query interface{}, page int, limit int) (interface{}, error) {
 	var data = reflect.MakeSlice(reflect.SliceOf(p.model), 0, 10).Interface()
 	err := p.coll.Find(query).Limit(limit).Skip((page - 1) * limit).All(&data)
