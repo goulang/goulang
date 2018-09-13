@@ -54,7 +54,7 @@ func loadRouters(r *gin.Engine) {
 	r.POST("logout", routes.LoginRequred, routes.Logout)
 	// 当前用户
 	r.GET("user", routes.LoginRequred, routes.User)
-	// 注册(默认状态正常)
+	// 注册(默认已激活)
 	r.POST("regist", routes.Regist)
 	// 修改密码 TODO
 	r.POST("passwd/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Passwd)
@@ -69,22 +69,21 @@ func loadRouters(r *gin.Engine) {
 	// 删除用户
 	r.DELETE("users/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.DeleteUser)
 
-
-	// 帖子列表 TODO
+	// 帖子列表
 	r.GET("topics", routes.GetTopics)
-	// 查看帖子 TODO
+	// 查看帖子
 	r.GET("topics/:topicID", routes.GetTopic)
-	// 发帖 TODO
+	// 发帖
 	r.POST("topics", routes.LoginRequred, routes.CreateTopic)
-	// 修改帖子 TODO
+	// 修改帖子
 	r.PUT("topics/:topicID", routes.LoginRequred, routes.TopicOwnerRequred, routes.UpdateTopic)
-	// 删帖 TODO
-	r.POST("topics/:topicID", routes.LoginRequred, routes.TopicOwnerRequred, routes.DeleteTopic)
+	// 删帖
+	r.DELETE("topics/:topicID", routes.LoginRequred, routes.TopicOwnerRequred, routes.DeleteTopic)
 
-	// 获取评论 TODO
+	// 获取评论
 	r.GET("topics/:topicID/comments", routes.GetComments)
-	// 发表评论 TODO
+	// 发表评论
 	r.POST("topics/:topicID/comments", routes.LoginRequred, routes.CreateComment)
-	// 删除评论 TODO
-	r.DELETE("topics/:topicID/comments/:commentID", routes.CommentOwnerRequred, routes.DeleteComment)
+	// 删除评论
+	r.DELETE("topics/:topicID/comments/:commentID", routes.LoginRequred, routes.CommentOwnerRequred, routes.DeleteComment)
 }

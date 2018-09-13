@@ -10,11 +10,12 @@ import (
 // LoginRequred 需要登陆
 func LoginRequred(c *gin.Context) {
 	session := sessions.Default(c)
-	user := session.Get("user")
-	if user == nil {
+	data := session.Get("user")
+	if data == nil {
 		c.AbortWithStatus(401)
 		return
 	}
+	user := data.(models.User)
 	c.Set("user", user)
 }
 
@@ -26,12 +27,14 @@ func UserOwnerRequred(c *gin.Context) {
 	}
 
 	userID := c.Param("userID")
-	Iuser, err := proxy.User.Get(userID)
+
+	data, err := proxy.User.Get(userID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
-	user := Iuser.(models.User)
+
+	user := data.(models.User)
 	if user.ID != currentUser.ID {
 		c.AbortWithStatus(403)
 		return
@@ -46,12 +49,13 @@ func TopicOwnerRequred(c *gin.Context) {
 	}
 
 	topicID := c.Param("topicID")
-	Itopic, err := proxy.Topic.Get(topicID)
+	data, err := proxy.Topic.Get(topicID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
-	topic := Itopic.(models.Topic)
+
+	topic := data.(models.Topic)
 	if topic.UserID != currentUser.ID {
 		c.AbortWithStatus(403)
 		return
@@ -66,12 +70,14 @@ func CommentOwnerRequred(c *gin.Context) {
 	}
 
 	CommentID := c.Param("CommentID")
-	IComment, err := proxy.Comment.Get(CommentID)
+
+	data, err := proxy.Comment.Get(CommentID)
 	if err != nil {
 		c.AbortWithStatus(400)
 		return
 	}
-	comment := IComment.(models.Comment)
+
+	comment := data.(models.Comment)
 	if comment.UserID != currentUser.ID {
 		c.AbortWithStatus(403)
 		return

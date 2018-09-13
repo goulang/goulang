@@ -54,7 +54,8 @@ func Logout(c *gin.Context) {
 }
 
 func User(c *gin.Context) {
-	c.JSON(200, c.MustGet("user"))
+	user := c.MustGet("user").(models.User)
+	c.JSON(200, user)
 }
 
 func Regist(c *gin.Context) {
@@ -86,22 +87,24 @@ func DeleteUser(c *gin.Context) {
 
 // GetUsers get all user
 func Users(c *gin.Context) {
-	users, err := proxy.User.GetMany(nil, 1, 10)
+	data, err := proxy.User.GetMany(nil, 1, 10)
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+	users := data.([]models.User)
 	c.JSON(200, users)
 }
 
 // GetUser get a user
 func GetUser(c *gin.Context) {
 	userID := c.Param("userID")
-	user, err := proxy.User.Get(userID)
+	data, err := proxy.User.Get(userID)
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+	user := data.(models.User)
 	c.JSON(200, user)
 }
 
