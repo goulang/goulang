@@ -65,7 +65,7 @@ func loadRouters(r *gin.Engine) {
 	// 修改个人信息 TODO
 	r.POST("users/userID", routes.LoginRequred, routes.UserOwnerRequred, routes.UpdateProfile)
 	// 上传头像 TODO
-	r.POST("avatar/userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
+	r.POST("avatar/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
 	// 删除用户
 	r.DELETE("users/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.DeleteUser)
 

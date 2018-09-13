@@ -8,6 +8,10 @@ import (
 	"github.com/goulang/goulang/errors"
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
+	"github.com/goulang/goulang/storage/Qiniu"
+	"fmt"
+	"time"
+	"log"
 )
 
 func Login(c *gin.Context) {
@@ -121,5 +125,26 @@ func UpdateProfile(c *gin.Context) {
 }
 
 func Avatar(c *gin.Context) {
+	var user models.User
+	userID := c.Param("userID")
+	data, err := proxy.User.Get(userID)
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+	user = data.(models.User)
 
+	//删除原有头像
+	ok := Qiniu.Storage.DeleteFile(user.Avatar)
+	if ok != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+
+	//上传新头像
+	file, header, err := c.Request.FormFile("file")
+	aaa := time.Now().UnixNano()
+	fmt.Println(aaa,ok)
 }
