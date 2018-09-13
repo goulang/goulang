@@ -2,30 +2,17 @@ package routes
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/goulang/goulang/storage/Qiniu"
+	"io/ioutil"
 )
 
-var (
-	storage     *Qiniu.Qiniu
-	bucket      = os.Getenv("QINIU_TEST_BUCKET")
-	accessKey   = os.Getenv("QINIU_ACCESS_KEY")
-	secretKey   = os.Getenv("QINIU_SECRET_KEY")
-	callBackURL = os.Getenv("QINIU_CALLBACK_URL")
-)
-
-func init() {
-	storage = Qiniu.NewQiniu(bucket, accessKey, secretKey, callBackURL)
-}
 
 /*
 获取上传Token
 */
 func GetUploadToken(c *gin.Context) {
-	upToken, putPolicy := storage.GetUploadToken()
+	upToken, putPolicy := Qiniu.Storage.GetUploadToken()
 	c.JSON(200, gin.H{
 		"token":   upToken,
 		"expires": putPolicy.Expires,
@@ -72,7 +59,9 @@ func Test(c *gin.Context) {
 	if err != nil {
 		fmt.Println("file", err)
 	}
-	bytes, err := ioutil.ReadAll(file)
-	storage.PutFile(header.Filename, bytes)
+	bytes, _ := ioutil.ReadAll(file)
+	rest, _ := Qiniu.Storage.PutFile(header.Filename, bytes)
+	fmt.Println(rest)
 	return
 }
+

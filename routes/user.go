@@ -8,6 +8,11 @@ import (
 	"github.com/goulang/goulang/errors"
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
+	"github.com/goulang/goulang/storage/Qiniu"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"time"
 )
 
 func Login(c *gin.Context) {
@@ -121,5 +126,57 @@ func UpdateProfile(c *gin.Context) {
 }
 
 func Avatar(c *gin.Context) {
+	var user models.User
+	userID := c.Param("userID")
+	data, err := proxy.User.Get(userID)
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+	user = data.(models.User)
 
+	//删除原有头像
+	ok := Qiniu.Storage.DeleteFile(user.Avatar)
+	if ok != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+
+	//上传新头像
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+	name := common.GetFileUniqueName(header.Filename)
+	// TODO 完成从配置读取路径
+	name = time.Now().Format("avatar/2006/01/02") + "/" + name
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+	_, isOk := Qiniu.Storage.PutFile(name, bytes)
+	if isOk != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+
+	//更新头像
+	user.Avatar = Qiniu.Storage.GetUrl(name)
+	if err := proxy.User.Update(userID, &user); err != nil {
+		log.Println(err)
+		errors.NewUnknownErr(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"key":    name,
+		"access": Qiniu.Storage.GetUrl(name),
+	})
 }

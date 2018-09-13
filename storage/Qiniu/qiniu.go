@@ -3,17 +3,31 @@ package Qiniu
 import (
 	"fmt"
 
-	finalFileInfo "github.com/goulang/goulang/storage"
 	"github.com/qiniu/api.v7/auth/qbox"
 	"github.com/qiniu/api.v7/storage"
-	"github.com/qiniu/x/rpc.v7"
-	"log"
 	"github.com/qiniu/x/bytes.v7"
+	"github.com/qiniu/x/rpc.v7"
 	"golang.org/x/net/context"
+	"log"
+	"os"
 )
+
+var (
+	Storage     *Qiniu
+	domain      = os.Getenv("QINIU_DOMAIN")
+	bucket      = os.Getenv("QINIU_TEST_BUCKET")
+	accessKey   = os.Getenv("QINIU_ACCESS_KEY")
+	secretKey   = os.Getenv("QINIU_SECRET_KEY")
+	callBackURL = os.Getenv("QINIU_CALLBACK_URL")
+)
+
+func init() {
+	Storage = NewQiniu(domain, bucket, accessKey, secretKey, callBackURL)
+}
 
 type Qiniu struct {
 	Mac           *qbox.Mac
+	domain        string
 	bucket        string
 	accessKey     string
 	secretKey     string
@@ -21,7 +35,7 @@ type Qiniu struct {
 	BucketManager *storage.BucketManager
 }
 
-func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
+func NewQiniu(domain, bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	mac := qbox.NewMac(accessKey, secretKey)
 	cfg := storage.Config{
 		UseHTTPS: false,
@@ -29,6 +43,7 @@ func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	bucketManager := storage.NewBucketManager(mac, &cfg)
 	return &Qiniu{
 		Mac:           mac,
+		domain:        domain,
 		bucket:        bucket,
 		accessKey:     accessKey,
 		secretKey:     secretKey,
@@ -56,7 +71,7 @@ func NewQiniu(bucket, accessKey, secretKey, callBackURL string) *Qiniu {
 	}
 
 */
-func (q *Qiniu) PutFile(key string, data []byte) (finalFileInfo.FinalPutFile, error) {
+func (q *Qiniu) PutFile(key string, data []byte) ([]interface{}, error) {
 	putPolicy := storage.PutPolicy{
 		Scope: q.bucket,
 	}
@@ -83,30 +98,33 @@ func (q *Qiniu) PutFile(key string, data []byte) (finalFileInfo.FinalPutFile, er
 	err := formUploader.Put(context.Background(), &ret, upToken, key, bytes.NewReader(data), dataLen, &putExtra)
 	if err != nil {
 		fmt.Println(err)
-		return finalFileInfo.FinalPutFile{}, err
+		return nil, err
 	}
 
 	result := []interface{}{ret.Key, ret.Hash, q.bucket, dataLen}
 
-	return finalFileInfo.FinalPutFile{result}, nil
+	return result, nil
 }
 
 //获取文件信息 传入文件KEY
-func (q *Qiniu) FileInfo(key string) finalFileInfo.FinalFileInfo {
+func (q *Qiniu) FileInfo(key string) storage.FileInfo {
 	fileInfo, sErr := q.BucketManager.Stat(q.bucket, key)
 	if sErr != nil {
-		fmt.Println(sErr)
-		return finalFileInfo.FinalFileInfo{}
+		log.Println(sErr)
+		return storage.FileInfo{}
 	}
-	return finalFileInfo.FinalFileInfo{fileInfo}
+	return fileInfo
 }
 
 //删除空间中的文件 (文件名)key
 func (q *Qiniu) DeleteFile(key string) error {
+	if !q.HasFile(key) {
+		return nil
+	}
 	manager := q.newBucketManager()
 	err := manager.Delete(q.bucket, key)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return err
 	}
 	return nil
@@ -127,8 +145,8 @@ func (q *Qiniu) GetUploadToken() (upToken string, putPolicy storage.PutPolicy) {
 }
 
 //获取指定前缀列表文件 (前缀)prefix (分隔符)delimiter (标记)marker (长度)limit
-func (q *Qiniu) PrefixListFiles(prefix string, limit int) finalFileInfo.FinalListItem {
-	var data [][]storage.ListItem
+func (q *Qiniu) PrefixListFiles(prefix string, limit int) []storage.ListItem {
+	var datas []storage.ListItem
 	delimiter := ""
 	marker := ""
 	manager := q.newBucketManager()
@@ -139,7 +157,9 @@ func (q *Qiniu) PrefixListFiles(prefix string, limit int) finalFileInfo.FinalLis
 			break
 		}
 		//print entries
-		data = append(data, entries)
+		for _, entrie := range entries {
+			datas = append(datas, entrie)
+		}
 		if hashNext {
 			marker = nextMarker
 		} else {
@@ -147,7 +167,7 @@ func (q *Qiniu) PrefixListFiles(prefix string, limit int) finalFileInfo.FinalLis
 			break
 		}
 	}
-	return finalFileInfo.FinalListItem{data}
+	return datas
 }
 
 //修改文件MimeType 传入 (文件名)key (新的Mine) newMine
@@ -166,7 +186,13 @@ func (q *Qiniu) BatchDeleteFile(keys []string) error {
 
 	deleteOps := make([]string, 0, len(keys))
 	for _, key := range keys {
-		deleteOps = append(deleteOps, storage.URIDelete(q.bucket, key))
+		if q.HasFile(key) {
+			deleteOps = append(deleteOps, storage.URIDelete(q.bucket, key))
+		}
+	}
+
+	if len(deleteOps) < 1 {
+		return nil
 	}
 
 	rets, err := manager.Batch(deleteOps)
@@ -186,6 +212,21 @@ func (q *Qiniu) BatchDeleteFile(keys []string) error {
 		}
 	}
 	return nil
+}
+
+func (q *Qiniu) HasFile(key string) bool {
+	files := q.PrefixListFiles(key, 1000)
+	for _, v := range files {
+		if v.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
+//获取资源路径
+func (q *Qiniu) GetUrl(key string) string {
+	return q.domain + key
 }
 
 func (q *Qiniu) newBucketManager() *storage.BucketManager {
