@@ -15,30 +15,32 @@ type proxy interface {
 	Create(body interface{}) error
 	Update(id string, body interface{}) error
 	Delete(id string) error
+	Count(query interface{}) (int, error)
 }
 
 var _ proxy = &baseProxy{}
 
 type baseProxy struct {
-	coll *mgo.Collection
+	coll  *mgo.Collection
+	model reflect.Type
 }
 
 func (p *baseProxy) Get(id string) (interface{}, error) {
-	var i interface{}
-	err := p.coll.FindId(bson.ObjectIdHex(id)).One(&i)
-	return i, err
+	var data = reflect.New(p.model).Interface()
+	err := p.coll.FindId(bson.ObjectIdHex(id)).One(data)
+	return reflect.ValueOf(data).Elem().Interface(), err
 }
 
 func (p *baseProxy) GetOne(query interface{}) (interface{}, error) {
-	var i interface{}
-	err := p.coll.Find(query).One(&i)
-	return i, err
+	var data = reflect.New(p.model).Interface()
+	err := p.coll.Find(query).One(data)
+	return reflect.ValueOf(data).Elem().Interface(), err
 }
 
 func (p *baseProxy) GetMany(query interface{}, page int, limit int) (interface{}, error) {
-	var i []interface{}
-	err := p.coll.Find(query).Limit(limit).Skip((page - 1) * limit).All(&i)
-	return i, err
+	var data = reflect.MakeSlice(reflect.SliceOf(p.model), 0, 10).Interface()
+	err := p.coll.Find(query).Limit(limit).Skip((page - 1) * limit).All(&data)
+	return data, err
 }
 
 func (p *baseProxy) Create(body interface{}) error {
@@ -64,4 +66,9 @@ func (p *baseProxy) Update(id string, body interface{}) error {
 func (p *baseProxy) Delete(id string) error {
 	err := p.coll.RemoveId(bson.ObjectIdHex(id))
 	return err
+}
+
+func (p *baseProxy) Count(query interface{}) (int, error) {
+	n, err := p.coll.Find(query).Count()
+	return n, err
 }

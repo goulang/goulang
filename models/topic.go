@@ -8,11 +8,11 @@ import (
 
 // Topic struct
 type Topic struct {
-	ID        bson.ObjectId `bson:"_id" json:"id"`
-	Title     string        `bson:"title" json:"title"`
-	Content   string        `bson:"content" json:"content"`
-	View      int           `bson:"view" json:"view"`
-	UserID    bson.ObjectId `bson:"user_id" json:"userID"`
-	CreatedAt time.Time     `bson:"created_at" json:"createdAt"`
-	UpdatedAt time.Time     `bson:"updated_at" json:"updatedAt"`
+	ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	Title     string        `bson:"title,omitempty" json:"title"`
+	Content   string        `bson:"content,omitempty" json:"content"`
+	View      int           `bson:"view,omitempty" json:"view"`
+	UserID    bson.ObjectId `bson:"user_id,omitempty" json:"userID"`
+	CreatedAt time.Time     `bson:"created_at,omitempty" json:"createdAt"`
+	UpdatedAt time.Time     `bson:"updated_at,omitempty" json:"updatedAt"`
 }
