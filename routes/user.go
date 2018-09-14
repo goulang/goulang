@@ -148,7 +148,21 @@ func Active(c *gin.Context) {
 }
 
 func UpdateProfile(c *gin.Context) {
+	userID := c.Param("userID")
+	var update models.Update
+	err := c.BindJSON(&update)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
 
+	if err := proxy.User.Update(userID, &update); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, errors.ApiErrSuccess)
 }
 
 func Avatar(c *gin.Context) {

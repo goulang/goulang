@@ -62,8 +62,8 @@ func loadRouters(r *gin.Engine) {
 	r.GET("active", routes.Active)
 	// 查看其他用户
 	r.GET("users/:userID", routes.GetUser)
-	// 修改个人信息 TODO
-	r.POST("users/userID", routes.LoginRequred, routes.UserOwnerRequred, routes.UpdateProfile)
+	// 修改个人信息
+	r.POST("users/:userID",routes.UpdateProfile)
 	// 上传头像
 	r.POST("avatar/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
 	// 删除用户
