@@ -10,3 +10,7 @@ func GetMD5Hash(text string) string {
 	hasher.Write([]byte(text))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
+
+func CheckPasswrd(check, password string) bool {
+	return GetMD5Hash(check) == password
+}

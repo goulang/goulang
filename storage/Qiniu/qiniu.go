@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -116,8 +117,11 @@ func (q *Qiniu) FileInfo(key string) storage.FileInfo {
 	return fileInfo
 }
 
-//删除空间中的文件 (文件名)key
-func (q *Qiniu) DeleteFile(key string) error {
+//删除空间中的文件 (文件名)key (是否去除域)domain
+func (q *Qiniu) DeleteFile(key string, domain bool) error {
+	if domain {
+		key = strings.Replace(key, q.domain, "", -1)
+	}
 	if !q.HasFile(key) {
 		return nil
 	}

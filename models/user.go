@@ -24,3 +24,9 @@ type User struct {
 	CreatedAt   time.Time     `bson:"created_at,omitempty" json:"createdAt"`
 	UpdatedAt   time.Time     `bson:"updated_at,omitempty" json:"updatedAt"`
 }
+
+type Password struct {
+	Password          string `json:"password" binding:"required,min=1,max=16"`
+	RePassword        string `json:"re_password" binding:"required,min=8,max=16"`
+	ReConfirmPassword string `json:"re_confirm_password" binding:"eqfield=RePassword"`
+}
