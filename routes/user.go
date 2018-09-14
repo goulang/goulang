@@ -114,7 +114,33 @@ func GetUser(c *gin.Context) {
 }
 
 func Passwd(c *gin.Context) {
+	var user models.User
+	var password models.Password
+	userID := c.Param("userID")
+	err := c.BindJSON(&password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	data, err := proxy.User.Get(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	user = data.(models.User)
 
+	if !common.CheckPasswrd(password.Password, user.Password) {
+		c.JSON(http.StatusBadRequest, errors.ApiErrPwdIncorrect)
+		return
+	}
+
+	user.Password = common.GetMD5Hash(password.RePassword)
+	if err := proxy.User.Update(userID, &user); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, errors.ApiErrSuccess)
 }
 
 func Active(c *gin.Context) {
@@ -131,16 +157,16 @@ func Avatar(c *gin.Context) {
 	data, err := proxy.User.Get(userID)
 	if err != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 	user = data.(models.User)
 
 	//删除原有头像
-	ok := Qiniu.Storage.DeleteFile(user.Avatar)
+	ok := Qiniu.Storage.DeleteFile(user.Avatar, true)
 	if ok != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 
@@ -148,7 +174,7 @@ func Avatar(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 	name := common.GetFileUniqueName(header.Filename)
@@ -157,13 +183,13 @@ func Avatar(c *gin.Context) {
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 	_, isOk := Qiniu.Storage.PutFile(name, bytes)
 	if isOk != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 
@@ -171,7 +197,7 @@ func Avatar(c *gin.Context) {
 	user.Avatar = Qiniu.Storage.GetUrl(name)
 	if err := proxy.User.Update(userID, &user); err != nil {
 		log.Println(err)
-		errors.NewUnknownErr(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
 

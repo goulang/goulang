@@ -35,7 +35,8 @@ func loadMiddlewares(r *gin.Engine) {
 	// session
 	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Domain: "goulang.org",
+		Domain: "localhost",
+		//Domain: "goulang.org",
 		MaxAge: 3 * 24 * 3600,
 	})
 	r.Use(sessions.Sessions("goulang", store))
@@ -56,7 +57,7 @@ func loadRouters(r *gin.Engine) {
 	r.GET("user", routes.LoginRequred, routes.User)
 	// 注册(默认已激活)
 	r.POST("regist", routes.Regist)
-	// 修改密码 TODO
+	// 修改密码
 	r.POST("passwd/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Passwd)
 	// 激活账户 TODO
 	r.GET("active", routes.Active)
@@ -64,7 +65,7 @@ func loadRouters(r *gin.Engine) {
 	r.GET("users/:userID", routes.GetUser)
 	// 修改个人信息 TODO
 	r.POST("users/userID", routes.LoginRequred, routes.UserOwnerRequred, routes.UpdateProfile)
-	// 上传头像 TODO
+	// 上传头像
 	r.POST("avatar/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
 	// 删除用户
 	r.DELETE("users/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.DeleteUser)

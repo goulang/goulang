@@ -7,7 +7,9 @@ import (
 
 var (
 	ApiErrRefuse           = ApiStandardError{403, "服务器拒绝请求"}
+	ApiErrSuccess          = ApiStandardError{1000, "正常!请安心服用!"}
 	ApiErrNamePwdIncorrect = ApiStandardError{1001, "用户名或密码错误"}
+	ApiErrPwdIncorrect = ApiStandardError{1002, "密码错误"}
 )
 
 type ApiStandardError struct {
@@ -16,7 +18,7 @@ type ApiStandardError struct {
 }
 
 func NewUnknownErr(e error) ApiStandardError {
-	return ApiStandardError{500, e.Error()}
+	return ApiStandardError{400, e.Error()}
 }
 
 func (err ApiStandardError) Error() string {
