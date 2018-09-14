@@ -35,8 +35,7 @@ func loadMiddlewares(r *gin.Engine) {
 	// session
 	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Domain: "localhost",
-		//Domain: "goulang.org",
+		Domain: "goulang.org",
 		MaxAge: 3 * 24 * 3600,
 	})
 	r.Use(sessions.Sessions("goulang", store))
