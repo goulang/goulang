@@ -10,6 +10,7 @@ var (
 	ApiErrSuccess          = ApiStandardError{1000, "正常!请安心服用!"}
 	ApiErrNamePwdIncorrect = ApiStandardError{1001, "用户名或密码错误"}
 	ApiErrPwdIncorrect = ApiStandardError{1002, "密码错误"}
+	ApiErrActiveInvalid = ApiStandardError{1004, "激活消息失效"}
 )
 
 type ApiStandardError struct {

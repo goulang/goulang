@@ -44,9 +44,12 @@ func loadMiddlewares(r *gin.Engine) {
 func loadRouters(r *gin.Engine) {
 	// qiniu
 	qiniuGroup := r.Group("qiniu")
+	//获取上传令牌
 	qiniuGroup.GET("token", routes.GetUploadToken)
-	// qiniuGroup.POST("callback", routes.CallbackURL)
-	qiniuGroup.POST("test", routes.Test)
+	//前端上传回调地址
+	qiniuGroup.POST("callback", routes.CallbackURL)
+	//测试使用
+	//qiniuGroup.POST("test", routes.Test)
 
 	// 登录
 	r.POST("login", routes.Login)

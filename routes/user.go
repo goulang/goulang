@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
@@ -9,18 +12,14 @@ import (
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
 	"github.com/goulang/goulang/storage/Qiniu"
+	"gopkg.in/gomail.v2"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 	"os"
-	"fmt"
-	"html/template"
-	"encoding/json"
-	"bytes"
-	"encoding/base64"
-	"gopkg.in/gomail.v2"
 	"strconv"
+	"time"
 )
 
 func Login(c *gin.Context) {
@@ -87,11 +86,12 @@ func Regist(c *gin.Context) {
 		return
 	}
 
-	sendActiveEmail(user.ID, user.Email)
+	go sendActiveEmail(user.ID.Hex(), user.Email)
 
+	c.JSON(http.StatusOK, errors.ApiErrSuccess)
 }
 
-func sendActiveEmail(id bson.ObjectId, to string) error {
+func sendActiveEmail(id, to string) error {
 
 	url := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + "active"
 	host := os.Getenv("MAIL_HOST")
@@ -127,7 +127,6 @@ func sendActiveEmail(id bson.ObjectId, to string) error {
 	m.SetHeader("Subject", "够浪社区邮箱激活认证")
 	//TODO temple完成
 	m.SetBody("text/html", b.String())
-	fmt.Println(b)
 	d := gomail.NewDialer(host, port, name, pasd)
 
 	if err := d.DialAndSend(m); err != nil {
@@ -204,7 +203,7 @@ func Passwd(c *gin.Context) {
 
 func Active(c *gin.Context) {
 	var activeInfo models.ActiveInfo
-
+	var active models.Active
 	base := c.Param("active")
 	encryptStr, err := base64.URLEncoding.DecodeString(base)
 	if err != nil {
@@ -216,17 +215,26 @@ func Active(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
-
 	if err := json.Unmarshal([]byte(info), &activeInfo); err != nil {
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
-	//is, err := proxy.User.Get(string(activeInfo.Id))
-	//if err != nil {
-	//	c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
-	//	return
-	//}
-	fmt.Println(activeInfo.Id)
+	if activeInfo.Expire <= time.Now().Unix() {
+		c.JSON(http.StatusBadRequest, errors.ApiErrActiveInvalid)
+		return
+	}
+	if _, err := proxy.User.Get(activeInfo.Id); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	active.Status = common.Lnormal
+	if err := proxy.User.Update(activeInfo.Id, &active); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+
+	home := os.Getenv("HOST") + ":" + os.Getenv("PORT")
+	c.Redirect(http.StatusFound, home)
 }
 
 func UpdateProfile(c *gin.Context) {
@@ -277,13 +285,13 @@ func Avatar(c *gin.Context) {
 	name := common.GetFileUniqueName(header.Filename)
 	// TODO 完成从配置读取路径
 	name = time.Now().Format("avatar/2006/01/02") + "/" + name
-	bytes, err := ioutil.ReadAll(file)
+	byteFile, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
-	_, isOk := Qiniu.Storage.PutFile(name, bytes)
+	_, isOk := Qiniu.Storage.PutFile(name, byteFile)
 	if isOk != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))

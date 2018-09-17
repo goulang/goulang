@@ -38,12 +38,17 @@ type Update struct {
 	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updatedAt"`
 }
 
+type Active struct {
+	Status      int       `json:"status"`
+	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updatedAt"`
+}
+
 type ActiveUrl struct {
 	Url  string
 	Info string
 }
 
 type ActiveInfo struct {
-	Id     bson.ObjectId
+	Id     string
 	Expire int64
 }
