@@ -58,8 +58,8 @@ func loadRouters(r *gin.Engine) {
 	r.POST("regist", routes.Regist)
 	// 修改密码
 	r.POST("passwd/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Passwd)
-	// 激活账户 TODO
-	r.GET("active", routes.Active)
+	// 激活账户
+	r.GET("active/:active", routes.Active)
 	// 查看其他用户
 	r.GET("users/:userID", routes.GetUser)
 	// 修改个人信息

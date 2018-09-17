@@ -13,6 +13,14 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"os"
+	"fmt"
+	"html/template"
+	"encoding/json"
+	"bytes"
+	"encoding/base64"
+	"gopkg.in/gomail.v2"
+	"strconv"
 )
 
 func Login(c *gin.Context) {
@@ -71,13 +79,64 @@ func Regist(c *gin.Context) {
 		return
 	}
 
-	user.Status = common.Lnormal
+	user.Status = common.Linactive
 	user.Password = common.GetMD5Hash(user.Password)
 	err = proxy.User.Create(&user)
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+
+	sendActiveEmail(user.ID, user.Email)
+
+}
+
+func sendActiveEmail(id bson.ObjectId, to string) error {
+
+	url := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + "active"
+	host := os.Getenv("MAIL_HOST")
+	port, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	name := os.Getenv("MAIL_USERNAME")
+	pasd := os.Getenv("MAIL_PASSWORD")
+
+	expire := time.Now().Add(86400 * time.Second).Unix()
+	args := models.ActiveInfo{Id: id, Expire: expire}
+	encodeByte, err := json.Marshal(args)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	encryptByte, err := common.AesEncrypt(string(encodeByte))
+	baseEncrypt := base64.URLEncoding.EncodeToString(encryptByte)
+	tmpl, err := template.ParseFiles("templates/user/email_active.html")
+	if err != nil {
+		log.Println("Error happened..")
+		return err
+	}
+	activeUrlStruct := models.ActiveUrl{Url: url, Info: string(baseEncrypt)}
+	var b bytes.Buffer
+	tmpl.Execute(&b, activeUrlStruct)
+	m := gomail.NewMessage()
+	m.SetHeader("From", name) //发件人
+	m.SetHeader("To", to)     //收件人
+	m.SetAddressHeader("Cc", "15398381714@163.com", "goulang")
+	m.SetHeader("Subject", "够浪社区邮箱激活认证")
+	//TODO temple完成
+	m.SetBody("text/html", b.String())
+	fmt.Println(b)
+	d := gomail.NewDialer(host, port, name, pasd)
+
+	if err := d.DialAndSend(m); err != nil {
+		//TODO 完成失败提示
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 // DeleteUsers delete a user
@@ -144,7 +203,30 @@ func Passwd(c *gin.Context) {
 }
 
 func Active(c *gin.Context) {
+	var activeInfo models.ActiveInfo
 
+	base := c.Param("active")
+	encryptStr, err := base64.URLEncoding.DecodeString(base)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	info, err := common.AesDecrypt(encryptStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+
+	if err := json.Unmarshal([]byte(info), &activeInfo); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	//is, err := proxy.User.Get(string(activeInfo.Id))
+	//if err != nil {
+	//	c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+	//	return
+	//}
+	fmt.Println(activeInfo.Id)
 }
 
 func UpdateProfile(c *gin.Context) {
@@ -152,6 +234,7 @@ func UpdateProfile(c *gin.Context) {
 	var update models.Update
 	err := c.BindJSON(&update)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}

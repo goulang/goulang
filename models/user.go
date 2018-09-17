@@ -32,8 +32,18 @@ type Password struct {
 }
 
 type Update struct {
-	Name        string        `json:"name" binding:"min=4,max=12"`
-	Description string        `json:"description" binding:"min=1,max=255"`
-	Status      int           `json:"status"`
-	UpdatedAt   time.Time     `bson:"updated_at,omitempty" json:"updatedAt"`
+	Name        string    `json:"name" binding:"min=4,max=12"`
+	Description string    `json:"description" binding:"min=1,max=255"`
+	Status      int       `json:"status"`
+	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updatedAt"`
+}
+
+type ActiveUrl struct {
+	Url  string
+	Info string
+}
+
+type ActiveInfo struct {
+	Id     bson.ObjectId
+	Expire int64
 }
