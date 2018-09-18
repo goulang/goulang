@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
@@ -9,9 +12,13 @@ import (
 	"github.com/goulang/goulang/models"
 	"github.com/goulang/goulang/proxy"
 	"github.com/goulang/goulang/storage/Qiniu"
+	"gopkg.in/gomail.v2"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -71,13 +78,64 @@ func Regist(c *gin.Context) {
 		return
 	}
 
-	user.Status = common.Lnormal
+	user.Status = common.Linactive
 	user.Password = common.GetMD5Hash(user.Password)
 	err = proxy.User.Create(&user)
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+
+	go sendActiveEmail(user.ID.Hex(), user.Email)
+
+	c.JSON(http.StatusOK, errors.ApiErrSuccess)
+}
+
+func sendActiveEmail(id, to string) error {
+
+	url := os.Getenv("HOST") + ":" + os.Getenv("PORT") + "/" + "active"
+	host := os.Getenv("MAIL_HOST")
+	port, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	name := os.Getenv("MAIL_USERNAME")
+	pasd := os.Getenv("MAIL_PASSWORD")
+
+	expire := time.Now().Add(86400 * time.Second).Unix()
+	args := models.ActiveInfo{Id: id, Expire: expire}
+	encodeByte, err := json.Marshal(args)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	encryptByte, err := common.AesEncrypt(string(encodeByte))
+	baseEncrypt := base64.URLEncoding.EncodeToString(encryptByte)
+	tmpl, err := template.ParseFiles("templates/user/email_active.html")
+	if err != nil {
+		log.Println("Error happened..")
+		return err
+	}
+	activeUrlStruct := models.ActiveUrl{Url: url, Info: string(baseEncrypt)}
+	var b bytes.Buffer
+	tmpl.Execute(&b, activeUrlStruct)
+	m := gomail.NewMessage()
+	m.SetHeader("From", name) //发件人
+	m.SetHeader("To", to)     //收件人
+	m.SetAddressHeader("Cc", "15398381714@163.com", "goulang")
+	m.SetHeader("Subject", "够浪社区邮箱激活认证")
+	//TODO temple完成
+	m.SetBody("text/html", b.String())
+	d := gomail.NewDialer(host, port, name, pasd)
+
+	if err := d.DialAndSend(m); err != nil {
+		//TODO 完成失败提示
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 // DeleteUsers delete a user
@@ -144,11 +202,58 @@ func Passwd(c *gin.Context) {
 }
 
 func Active(c *gin.Context) {
+	var activeInfo models.ActiveInfo
+	var active models.Active
+	base := c.Param("active")
+	encryptStr, err := base64.URLEncoding.DecodeString(base)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	info, err := common.AesDecrypt(encryptStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	if err := json.Unmarshal([]byte(info), &activeInfo); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	if activeInfo.Expire <= time.Now().Unix() {
+		c.JSON(http.StatusBadRequest, errors.ApiErrActiveInvalid)
+		return
+	}
+	if _, err := proxy.User.Get(activeInfo.Id); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+	active.Status = common.Lnormal
+	if err := proxy.User.Update(activeInfo.Id, &active); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
 
+	home := os.Getenv("HOST") + ":" + os.Getenv("PORT")
+	c.Redirect(http.StatusFound, home)
 }
 
 func UpdateProfile(c *gin.Context) {
+	userID := c.Param("userID")
+	var update models.Update
+	err := c.BindJSON(&update)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
 
+	if err := proxy.User.Update(userID, &update); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, errors.ApiErrSuccess)
 }
 
 func Avatar(c *gin.Context) {
@@ -180,13 +285,13 @@ func Avatar(c *gin.Context) {
 	name := common.GetFileUniqueName(header.Filename)
 	// TODO 完成从配置读取路径
 	name = time.Now().Format("avatar/2006/01/02") + "/" + name
-	bytes, err := ioutil.ReadAll(file)
+	byteFile, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))
 		return
 	}
-	_, isOk := Qiniu.Storage.PutFile(name, bytes)
+	_, isOk := Qiniu.Storage.PutFile(name, byteFile)
 	if isOk != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, errors.NewUnknownErr(err))

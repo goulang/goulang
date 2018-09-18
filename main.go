@@ -44,9 +44,12 @@ func loadMiddlewares(r *gin.Engine) {
 func loadRouters(r *gin.Engine) {
 	// qiniu
 	qiniuGroup := r.Group("qiniu")
+	//获取上传令牌
 	qiniuGroup.GET("token", routes.GetUploadToken)
-	// qiniuGroup.POST("callback", routes.CallbackURL)
-	qiniuGroup.POST("test", routes.Test)
+	//前端上传回调地址
+	qiniuGroup.POST("callback", routes.CallbackURL)
+	//测试使用
+	//qiniuGroup.POST("test", routes.Test)
 
 	// 登录
 	r.POST("login", routes.Login)
@@ -58,12 +61,12 @@ func loadRouters(r *gin.Engine) {
 	r.POST("regist", routes.Regist)
 	// 修改密码
 	r.POST("passwd/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Passwd)
-	// 激活账户 TODO
-	r.GET("active", routes.Active)
+	// 激活账户
+	r.GET("active/:active", routes.Active)
 	// 查看其他用户
 	r.GET("users/:userID", routes.GetUser)
-	// 修改个人信息 TODO
-	r.POST("users/userID", routes.LoginRequred, routes.UserOwnerRequred, routes.UpdateProfile)
+	// 修改个人信息
+	r.POST("users/:userID",routes.UpdateProfile)
 	// 上传头像
 	r.POST("avatar/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
 	// 删除用户

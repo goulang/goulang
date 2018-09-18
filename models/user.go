@@ -30,3 +30,25 @@ type Password struct {
 	RePassword        string `json:"re_password" binding:"required,min=8,max=16"`
 	ReConfirmPassword string `json:"re_confirm_password" binding:"eqfield=RePassword"`
 }
+
+type Update struct {
+	Name        string    `json:"name" binding:"min=4,max=12"`
+	Description string    `json:"description" binding:"min=1,max=255"`
+	Status      int       `json:"status"`
+	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updatedAt"`
+}
+
+type Active struct {
+	Status      int       `json:"status"`
+	UpdatedAt   time.Time `bson:"updated_at,omitempty" json:"updatedAt"`
+}
+
+type ActiveUrl struct {
+	Url  string
+	Info string
+}
+
+type ActiveInfo struct {
+	Id     string
+	Expire int64
+}

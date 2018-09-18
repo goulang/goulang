@@ -9,6 +9,7 @@ import (
 )
 
 var User *userProxy
+var Qiniu *qiniuProxy
 var Topic *topicProxy
 var Comment *commentProxy
 
@@ -18,6 +19,7 @@ func init() {
 		panic(err)
 	}
 	User = &userProxy{baseProxy{session.DB("goulang").C("user"), reflect.TypeOf((*models.User)(nil)).Elem()}}
+	Qiniu = &qiniuProxy{baseProxy{session.DB("goulang").C("qiniu"), reflect.TypeOf((*models.QFile)(nil)).Elem()}}
 	Topic = &topicProxy{baseProxy{session.DB("goulang").C("topic"), reflect.TypeOf((*models.Topic)(nil)).Elem()}}
 	Comment = &commentProxy{baseProxy{session.DB("goulang").C("comment"), reflect.TypeOf((*models.Comment)(nil)).Elem()}}
 }
