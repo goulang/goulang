@@ -89,4 +89,5 @@ func loadRouters(r *gin.Engine) {
 	r.POST("topics/:topicID/comments", routes.LoginRequred, routes.CreateComment)
 	// 删除评论
 	r.DELETE("topics/:topicID/comments/:commentID", routes.LoginRequred, routes.CommentOwnerRequred, routes.DeleteComment)
+	r.GET("/",routes.All)
 }
