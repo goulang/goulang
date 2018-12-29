@@ -20,6 +20,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"fmt"
 )
 
 func Login(c *gin.Context) {
@@ -71,21 +72,24 @@ func User(c *gin.Context) {
 }
 
 func Regist(c *gin.Context) {
+
 	var user models.User
 	err := c.BindJSON(&user)
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+	fmt.Println(user)
 
 	user.Status = common.Linactive
 	user.Password = common.GetMD5Hash(user.Password)
 	err = proxy.User.Create(&user)
+
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
-
+	fmt.Println(user)
 	go sendActiveEmail(user.ID.Hex(), user.Email)
 
 	c.JSON(http.StatusOK, errors.ApiErrSuccess)

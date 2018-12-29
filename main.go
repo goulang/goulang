@@ -5,7 +5,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"github.com/gin-contrib/cors"
+	// "github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -19,18 +19,22 @@ func main() {
 	router.Run(":" + os.Getenv("PORT"))
 }
 
+func selfCors () {
+
+}
 func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
+	selfCors()
 	// cors
-	config := cors.DefaultConfig()
-	config.AllowCredentials = true
-	config.AllowOriginFunc = func(origin string) bool {
-		return true
-	}
-	config.AddAllowMethods("PUT", "DELETE")
-	r.Use(cors.New(config))
+	// config := cors.DefaultConfig()
+	// config.AllowCredentials = true
+	// config.AllowOriginFunc = func(origin string) bool {
+	// 	return true
+	// }
+	// config.AddAllowMethods("POST", "PUT", "DELETE")
+	// r.Use(cors.New(config))
 
 	// session
 	store := cookie.NewStore([]byte("secret"))
@@ -58,7 +62,7 @@ func loadRouters(r *gin.Engine) {
 	// 当前用户
 	r.GET("user", routes.LoginRequred, routes.User)
 	// 注册(默认已激活)
-	r.POST("regist", routes.Regist)
+	r.POST("register", routes.Regist)
 	// 修改密码
 	r.POST("passwd/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Passwd)
 	// 激活账户
@@ -66,7 +70,7 @@ func loadRouters(r *gin.Engine) {
 	// 查看其他用户
 	r.GET("users/:userID", routes.GetUser)
 	// 修改个人信息
-	r.POST("users/:userID",routes.UpdateProfile)
+	r.POST("users/:userID", routes.UpdateProfile)
 	// 上传头像
 	r.POST("avatar/:userID", routes.LoginRequred, routes.UserOwnerRequred, routes.Avatar)
 	// 删除用户
@@ -89,5 +93,5 @@ func loadRouters(r *gin.Engine) {
 	r.POST("topics/:topicID/comments", routes.LoginRequred, routes.CreateComment)
 	// 删除评论
 	r.DELETE("topics/:topicID/comments/:commentID", routes.LoginRequred, routes.CommentOwnerRequred, routes.DeleteComment)
-	r.GET("/",routes.All)
+	r.GET("/", routes.All)
 }
