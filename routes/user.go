@@ -54,12 +54,21 @@ func Login(c *gin.Context) {
 	}
 
 	session := sessions.Default(c)
+	// 设置一下session,然后返回给浏览器
 	session.Set("user", user)
+	// 保存这个session,登录
 	err = session.Save()
 	if err != nil {
 		c.String(400, err.Error())
 		return
 	}
+	// 返回的session
+	resSe := session.Get("user")
+ 
+	c.JSON(200, map[string]interface{}{
+		"session":  resSe ,
+		"errno":0,
+	})
 }
 
 func Logout(c *gin.Context) {
