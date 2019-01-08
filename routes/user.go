@@ -4,6 +4,15 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
@@ -13,25 +22,21 @@ import (
 	"github.com/goulang/goulang/proxy"
 	"github.com/goulang/goulang/storage/Qiniu"
 	"gopkg.in/gomail.v2"
-	"html/template"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
-	"fmt"
 )
 
 func Login(c *gin.Context) {
+	// var user models.User
+	// c.BindJSON()
+
 	var user models.User
 	err := c.BindJSON(&user)
 	if err != nil {
+		fmt.Println(err)
 		c.String(400, err.Error())
 		return
 	}
 	data, err := proxy.User.GetOne(bson.M{
-		"name":     user.Name,
+		"email":     user.Email,
 		"password": common.GetMD5Hash(user.Password),
 	})
 	if err != nil {
@@ -40,6 +45,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	user = data.(models.User)
+
 
 	// 校验账号状态
 	if user.Status == common.Linactive || user.Status == common.Ldisable {
@@ -81,7 +87,11 @@ func Regist(c *gin.Context) {
 	}
 	fmt.Println(user)
 
-	user.Status = common.Linactive
+	// user.Status = common.Linactive
+	// 测试用的 亲
+	user.Status = common.Lnormal
+
+
 	user.Password = common.GetMD5Hash(user.Password)
 	err = proxy.User.Create(&user)
 

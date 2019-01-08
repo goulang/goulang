@@ -5,9 +5,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	// "github.com/gin-contrib/cors"
-	"net/http"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -20,40 +18,20 @@ func main() {
 	loadRouters(router)
 	router.Run(":" + os.Getenv("PORT"))
 }
-
-func Cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		method := c.Request.Method
-		c.Header("Access-Control-Allow-Origin", "http://localhost:9000")
-		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token, x-requested-with")
-		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, PATCH, DELETE")
-		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
-		c.Header("Access-Control-Allow-Credentials", "true")
-
-		// 放行所有OPTIONS方法
-		if method == "OPTIONS" {
-			// OPTIONS请求直接返回204
-			c.AbortWithStatus(http.StatusNoContent)
- 
-		}
-
-		// 处理请求
-		c.Next()
-	}
-}
 func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	r.Use(Cors())
 	// cors
-	// config := cors.DefaultConfig()
-	// config.AllowCredentials = true
-	// config.AllowOriginFunc = func(origin string) bool {
-	// 	return true
-	// }
-	// config.AddAllowMethods("POST", "PUT", "DELETE")
-	// r.Use(cors.New(config))
+	config := cors.DefaultConfig()
+	config.AllowCredentials = true
+	config.AllowOriginFunc = func(origin string) bool {
+		// fmt.Println(origin)
+		// config.AllowOrigins = []string{origin}
+		return true
+	}
+	config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
+	r.Use(cors.New(config))
 
 	// session
 	store := cookie.NewStore([]byte("secret"))
