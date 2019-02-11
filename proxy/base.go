@@ -38,8 +38,10 @@ func (p *baseProxy) GetOne(query interface{}) (interface{}, error) {
 }
 
 func (p *baseProxy) GetMany(query interface{}, page int, limit int) (interface{}, error) {
+	// fmt.Println(strconv.Itoa(page))
+
 	var data = reflect.MakeSlice(reflect.SliceOf(p.model), 0, 10).Interface()
-	err := p.coll.Find(query).Limit(limit).Skip((page - 1) * limit).All(&data)
+	err := p.coll.Find(query).Sort("-_id").Limit(limit).Skip((page - 1) * limit).All(&data)
 	return data, err
 }
 
