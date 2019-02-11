@@ -10,6 +10,7 @@ import (
 type Topic struct {
 	ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Title     string        `bson:"title,omitempty" json:"title"`
+	Description string      `bson:"description,omitempty" json:"description"`
 	Content   string        `bson:"content,omitempty" json:"content"`
 	View      int           `bson:"view,omitempty" json:"view"`
 	UserID    bson.ObjectId `bson:"user_id,omitempty" json:"userID"`

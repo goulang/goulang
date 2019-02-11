@@ -5,7 +5,6 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -23,15 +22,15 @@ func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Recovery())
 
 	// cors
-	config := cors.DefaultConfig()
-	config.AllowCredentials = true
-	config.AllowOriginFunc = func(origin string) bool {
-		// fmt.Println(origin)
-		// config.AllowOrigins = []string{origin}
-		return true
-	}
-	config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
-	r.Use(cors.New(config))
+	// config := cors.DefaultConfig()
+	// config.AllowCredentials = true
+	// config.AllowOriginFunc = func(origin string) bool {
+	// 	// fmt.Println(origin)
+	// 	// config.AllowOrigins = []string{origin}
+	// 	return true
+	// }
+	// config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
+	// r.Use(cors.New(config))
 
 	// session
 	store := cookie.NewStore([]byte("secret"))

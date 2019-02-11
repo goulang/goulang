@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -80,6 +81,10 @@ func CreateTopic(c *gin.Context) {
 		c.String(400, err.Error())
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"error": 0,
+		"errmsg":"保存成功",
+	})
 }
 
 // UpdateTopics update a Topic
