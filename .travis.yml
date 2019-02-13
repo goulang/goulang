@@ -10,3 +10,9 @@ install:
   - echo no install
 script:
   - go build
+
+path: 
+  - /usr/local
+
+path2:
+  - /usr/local
