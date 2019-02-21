@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -13,15 +15,37 @@ import (
 
 func main() {
 	router := gin.New()
+	config := cors.DefaultConfig()
+	config.AllowCredentials = true
+	config.AllowOriginFunc = func(origin string) bool {
+		fmt.Println(origin)
+		config.AllowOrigins = []string{origin}
+		return true
+	}
+	// config.AddAllowMethods("GET")
+
+	router.Use(cors.New(config))
+
 	loadMiddlewares(router)
 	loadRouters(router)
 	router.Run(":" + os.Getenv("PORT"))
 }
 func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
+	// r.Use(gin.Recovery())
 
 	// cors
+	// r.Use(cors.Default())
+	// config := cors.DefaultConfig()
+	// config.AllowCredentials = true
+	// config.AllowOriginFunc = func(origin string) bool {
+	// 	config.AllowOrigins = []string{origin}
+	// 	return true
+	// }
+
+	// // config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
+	// router := r
+	// router.Use(cors.New(config))
 	// config := cors.DefaultConfig()
 	// config.AllowCredentials = true
 	// config.AllowOriginFunc = func(origin string) bool {
