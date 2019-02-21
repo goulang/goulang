@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -18,8 +17,8 @@ func main() {
 	config := cors.DefaultConfig()
 	config.AllowCredentials = true
 	config.AllowOriginFunc = func(origin string) bool {
-		fmt.Println(origin)
-		config.AllowOrigins = []string{origin}
+		// fmt.Println(origin)
+		config.AllowOrigins = []string{"http://www.goulang.org/"}
 		return true
 	}
 	// config.AddAllowMethods("GET")
@@ -32,7 +31,7 @@ func main() {
 }
 func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Logger())
-	// r.Use(gin.Recovery())
+	r.Use(gin.Recovery())
 
 	// cors
 	// r.Use(cors.Default())
@@ -59,7 +58,7 @@ func loadMiddlewares(r *gin.Engine) {
 	// session
 	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Domain: "localhost",
+		Domain: "goulang.org",
 		MaxAge: 7 * 24 * 3600,
 	})
 	r.Use(sessions.Sessions("goulang", store))

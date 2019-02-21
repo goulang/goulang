@@ -40,7 +40,7 @@ func GetTopics(c *gin.Context) {
 		"page":  page,
 		"limit": limit,
 		"count": n,
-		"list":  topics,
+		"list":  topics, 
 	})
 }
 
