@@ -14,16 +14,6 @@ import (
 
 func main() {
 	router := gin.New()
-	config := cors.DefaultConfig()
-	config.AllowCredentials = true
-	config.AllowOriginFunc = func(origin string) bool {
-		// fmt.Println(origin)
-		config.AllowOrigins = []string{"http://www.goulang.org/"}
-		return true
-	}
-	// config.AddAllowMethods("GET")
-
-	router.Use(cors.New(config))
 
 	loadMiddlewares(router)
 	loadRouters(router)
@@ -34,31 +24,18 @@ func loadMiddlewares(r *gin.Engine) {
 	r.Use(gin.Recovery())
 
 	// cors
-	// r.Use(cors.Default())
-	// config := cors.DefaultConfig()
-	// config.AllowCredentials = true
-	// config.AllowOriginFunc = func(origin string) bool {
-	// 	config.AllowOrigins = []string{origin}
-	// 	return true
-	// }
-
-	// // config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
-	// router := r
-	// router.Use(cors.New(config))
-	// config := cors.DefaultConfig()
-	// config.AllowCredentials = true
-	// config.AllowOriginFunc = func(origin string) bool {
-	// 	// fmt.Println(origin)
-	// 	// config.AllowOrigins = []string{origin}
-	// 	return true
-	// }
-	// config.AddAllowMethods("POST", "PUT", "OPTIONS", "DELETE")
-	// r.Use(cors.New(config))
+	config := cors.DefaultConfig()
+	config.AllowCredentials = true
+	config.AllowOriginFunc = func(origin string) bool {
+		config.AllowOrigins = []string{origin}
+		return true
+	}
+	r.Use(cors.New(config))
 
 	// session
 	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
-		Domain: "goulang.org",
+		Domain: os.Getenv("HOST"),
 		MaxAge: 7 * 24 * 3600,
 	})
 	r.Use(sessions.Sessions("goulang", store))
